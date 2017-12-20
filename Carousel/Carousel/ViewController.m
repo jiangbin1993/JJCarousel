@@ -26,13 +26,18 @@
     [super viewDidLoad];
     
     JJCarousel *carousel = [[JJCarousel alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, 200)];
-    carousel.backgroundColor = [UIColor grayColor];
+//    修改自动滚动间隔时间
     carousel.timerInterval = 1;
     [self.view addSubview:carousel];
     
+//    模拟数据
     [self loadData];
-    
+//    加载图片数组
     [carousel configWithArray:self.array];
+    
+//    修改页签的样式
+    carousel.pageCtrl.pageIndicatorTintColor = [UIColor blueColor];
+    carousel.pageCtrl.currentPageIndicatorTintColor = [UIColor greenColor];
 }
 
 - (void)loadData{
