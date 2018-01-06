@@ -24,6 +24,9 @@
 }
 
 - (void)configWithArray:(NSMutableArray *)array{
+    if (array.count == 0) {
+        return;
+    }
     // 页面控制视图
     self.pageCtrl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.frame.origin.y + self.frame.size.height - 20, self.frame.size.width, 20)];
     _pageCtrl.numberOfPages = array.count;
