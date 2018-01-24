@@ -14,11 +14,13 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.timerInterval = 3;
-        self.pagingEnabled = YES;
-        self.showsHorizontalScrollIndicator = NO;
+        self.scroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
+        self.scroll.pagingEnabled = YES;
+        self.scroll.showsHorizontalScrollIndicator = NO;
         // 设置初始平移量
-        self.contentOffset = CGPointMake(frame.size.width, 0);
-        self.delegate = self;
+        self.scroll.contentOffset = CGPointMake(frame.size.width, 0);
+        self.scroll.delegate = self;
+        [self addSubview:self.scroll];
     }
     return self;
 }
@@ -28,23 +30,24 @@
         return;
     }
     // 页面控制视图
-    self.pageCtrl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.frame.origin.y + self.frame.size.height - 20, self.frame.size.width, 20)];
+    [self.pageCtrl removeFromSuperview];
+    self.pageCtrl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.frame.size.height - 20, self.frame.size.width, 20)];
     _pageCtrl.numberOfPages = array.count;
     _pageCtrl.pageIndicatorTintColor = [UIColor grayColor];
     [_pageCtrl addTarget:self action:@selector(pageCtrlAction:) forControlEvents:(UIControlEventValueChanged)];
-    [self.superview addSubview:_pageCtrl];
+    [self addSubview:_pageCtrl];
     
     self.array = [NSMutableArray arrayWithArray:array];
     [self.array addObject:array.firstObject];
     [self.array insertObject:array.lastObject atIndex:0];
-    self.contentSize = CGSizeMake(self.frame.size.width * self.array.count, 0);
+    self.scroll.contentSize = CGSizeMake(self.scroll.frame.size.width * self.array.count, 0);
     
     // 滚动视图上的图片视图们
     for (int i = 0; i < self.array.count; i++) {
-        UIImageView *imgV = [[UIImageView alloc] initWithFrame:CGRectMake(self.frame.size.width * i, 0, self.frame.size.width, self.frame.size.height)];
+        UIImageView *imgV = [[UIImageView alloc] initWithFrame:CGRectMake(self.scroll.frame.size.width * i, 0, self.scroll.frame.size.width, self.scroll.frame.size.height)];
 //        这里推荐使用sd_webimage框架加载图片，因为代码示范不宜加入其它框架，所以这里使用多线程加载
         [self loadImgWithImgview:imgV url:[NSURL URLWithString:self.array[i]]];
-        [self addSubview:imgV];
+        [self.scroll addSubview:imgV];
     }
     
     
@@ -62,17 +65,17 @@
 - (void)pageCtrlAction:(UIPageControl *)pageCtrl
 {
     // 更改偏移量动画
-    [self setContentOffset:CGPointMake((_pageCtrl.currentPage + 1) * self.frame.size.width, 0) animated:YES];
+    [self.scroll setContentOffset:CGPointMake((_pageCtrl.currentPage + 1) * self.scroll.frame.size.width, 0) animated:YES];
 }
 
 // 定时器实现循环播放
 - (void)timerAction:(NSTimer *)timer
 {
     _index++;
-    [self setContentOffset:CGPointMake(self.frame.size.width * (_index + 1), 0) animated:YES];
+    [self.scroll setContentOffset:CGPointMake(self.frame.size.width * (_index + 1), 0) animated:YES];
     if (_index == self.array.count-2) {
         _index = 0;
-        [self setContentOffset:CGPointMake(self.frame.size.width * _index, 0)];
+        [self.scroll setContentOffset:CGPointMake(self.scroll.frame.size.width * _index, 0)];
     }
     _pageCtrl.currentPage = _index;
 }
@@ -91,15 +94,15 @@
 {
     // scrollView 滑动偏移量 contantOffset
     // pageCtrl 当前小圆点索引 currentPage
-    _index = self.contentOffset.x / self.frame.size.width - 1;
+    _index = self.scroll.contentOffset.x / self.scroll.frame.size.width - 1;
     
     if (_index == self.array.count - 2) {
         _index = 0;
-        [self setContentOffset:CGPointMake(self.frame.size.width, 0) animated:NO];
+        [self.scroll setContentOffset:CGPointMake(self.scroll.frame.size.width, 0) animated:NO];
     }
     if (_index == -1) {
         _index = self.array.count - 3;
-        [self setContentOffset:CGPointMake((self.array.count - 2) * self.frame.size.width, 0) animated:NO];
+        [self.scroll setContentOffset:CGPointMake((self.array.count - 2) * self.scroll.frame.size.width, 0) animated:NO];
     }
     _pageCtrl.currentPage = _index;
     // 重新开启定时器

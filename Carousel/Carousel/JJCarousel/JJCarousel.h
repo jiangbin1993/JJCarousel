@@ -8,7 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface JJCarousel : UIScrollView <UIScrollViewDelegate>
+@interface JJCarousel : UIView <UIScrollViewDelegate>
+// 滚图
+@property(nonatomic,strong) UIScrollView *scroll;
 // 定时器
 @property(nonatomic,strong) NSTimer *timer;
 // 定时器间隔时间(默认3秒 可修改)
