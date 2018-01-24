@@ -42,7 +42,8 @@
     // 滚动视图上的图片视图们
     for (int i = 0; i < self.array.count; i++) {
         UIImageView *imgV = [[UIImageView alloc] initWithFrame:CGRectMake(self.frame.size.width * i, 0, self.frame.size.width, self.frame.size.height)];
-        imgV.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:self.array[i]]]];
+//        这里推荐使用sd_webimage框架加载图片，因为代码示范不宜加入其它框架，所以这里使用多线程加载
+        [self loadImgWithImgview:imgV url:[NSURL URLWithString:self.array[i]]];
         [self addSubview:imgV];
     }
     
@@ -50,8 +51,12 @@
     [self setupTimer];
 }
 
-
-
+// 多线程加载图片 防止阻塞主线程造成响应问题
+- (void)loadImgWithImgview:(UIImageView *)imgview url:(NSURL *)url{
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        imgview.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:url]];
+    });
+}
 
 // pageCtrl点击事件，pageCtrl 影响 scrollView
 - (void)pageCtrlAction:(UIPageControl *)pageCtrl
