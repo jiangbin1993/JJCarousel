@@ -45,8 +45,7 @@
     // 滚动视图上的图片视图们
     for (int i = 0; i < self.array.count; i++) {
         UIImageView *imgV = [[UIImageView alloc] initWithFrame:CGRectMake(self.scroll.frame.size.width * i, 0, self.scroll.frame.size.width, self.scroll.frame.size.height)];
-//        这里推荐使用sd_webimage框架加载图片，因为代码示范不宜加入其它框架，所以这里使用多线程加载
-        [self loadImgWithImgview:imgV url:[NSURL URLWithString:self.array[i]]];
+        [self loadImgWithImgview:imgV urlStr:self.array[i]];
         [self.scroll addSubview:imgV];
     }
     
@@ -54,10 +53,17 @@
     [self setupTimer];
 }
 
-// 多线程加载图片 防止阻塞主线程造成响应问题
-- (void)loadImgWithImgview:(UIImageView *)imgview url:(NSURL *)url{
+
+- (void)loadImgWithImgview:(UIImageView *)imgview urlStr:(NSString *)urlStr{
+    // 多线程加载图片 防止阻塞主线程造成响应问题（如果使用SD_WebImage加载图片，则去除此多线程）
     dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        imgview.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:url]];
+        // 判断是网络图片还是本地工程内图片
+        if ([urlStr hasPrefix:@"http"]) {
+//        这里推荐使用SD_WebImage框架加载图片，因为代码示范不宜加入其它框架，所以这里使用多线程加载
+         imgview.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:urlStr]]];
+        }else{
+            imgview.image = [UIImage imageNamed:urlStr];
+        }
     });
 }
 
