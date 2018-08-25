@@ -119,6 +119,8 @@
 // 创建定时器
 - (void)setupTimer
 {
+    [self.timer invalidate];
+    self.timer = nil;
     // 定时器：实现自动播放
     self.timer = [NSTimer scheduledTimerWithTimeInterval:_timerInterval target:self selector:@selector(timerAction:) userInfo:nil repeats:YES];
 }
