@@ -9,7 +9,7 @@
 #import "ViewController.h"
 #import "JJCarousel.h"
 
-@interface ViewController ()
+@interface ViewController () <JJCarouselDelegate>
 
 @property(nonatomic,strong) NSMutableArray *array;
 
@@ -33,6 +33,7 @@
     JJCarousel *carousel = [[JJCarousel alloc] initWithFrame:CGRectMake(0, 100, [UIScreen mainScreen].bounds.size.width, 200)];
 //    修改自动滚动间隔时间
     carousel.timerInterval = 1;
+    carousel.delegate = self;
     [self.view addSubview:carousel];
     self.carousel = carousel;
     
@@ -53,6 +54,10 @@
     [self.array addObject:@"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1513682944228&di=4b865c92560703dcf87c9b0e6a69aac7&imgtype=0&src=http%3A%2F%2Fimg5q.duitang.com%2Fuploads%2Fitem%2F201502%2F21%2F20150221151214_AdKvv.jpeg"];
 }
 
+#pragma mark -----------JJCarousel代理方法--------
+- (void)clickCarouselWithIndex:(NSInteger)index {
+    NSLog(@"点击了第%ld页",index);
+}
 
 - (void)dealloc {
     [self.carousel destroy];

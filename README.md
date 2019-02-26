@@ -43,7 +43,12 @@ JJCarousel *carousel = [[JJCarousel alloc] initWithFrame:CGRectMake(0, 100, [UIS
     carousel.pageCtrl.currentPageIndicatorTintColor = [UIColor greenColor];
 ```
 
-
+**注意：最后在控制器销毁时调用JJCarousel的destroy方法，否则会导致内存泄漏。**
+```
+- (void)dealloc {
+[self.carousel destroy];
+}
+```
 
 
 
