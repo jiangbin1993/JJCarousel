@@ -22,5 +22,14 @@
 // 图片数组
 @property(nonatomic,strong) NSMutableArray *array;
 
+/**
+ * 图片数组配置轮播图
+ */
 - (void)configWithArray:(NSMutableArray *)array;
+
+/**
+ * 销毁，释放自己 不调用会导致内存泄漏
+ */
+- (void)destroy;
+
 @end

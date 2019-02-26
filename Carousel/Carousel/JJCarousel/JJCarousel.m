@@ -10,7 +10,7 @@
 
 @implementation JJCarousel
 
-- (instancetype)initWithFrame:(CGRect)frame{
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         self.timerInterval = 3;
@@ -25,10 +25,17 @@
     return self;
 }
 
-- (void)configWithArray:(NSMutableArray *)array{
+- (void)configWithArray:(NSMutableArray *)array {
     if (array.count == 0) {
         return;
     }
+    
+    // 当数据变动时 防止数组个数变少可能出现的数组越界 要重置一下index和滚图偏移量
+    if (array.count != self.array.count - 2) {
+        _index = 0;
+        self.scroll.contentOffset = CGPointMake(self.scroll.frame.size.width, 0);
+    }
+    
     // 页面控制视图
     [self.pageCtrl removeFromSuperview];
     self.pageCtrl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, self.frame.size.height - 20, self.frame.size.width, 20)];
@@ -49,12 +56,11 @@
         [self.scroll addSubview:imgV];
     }
     
-    
     [self setupTimer];
 }
 
 
-- (void)loadImgWithImgview:(UIImageView *)imgview urlStr:(NSString *)urlStr{
+- (void)loadImgWithImgview:(UIImageView *)imgview urlStr:(NSString *)urlStr {
     // 多线程加载图片 防止阻塞主线程造成响应问题（如果使用SD_WebImage加载图片，则去除此多线程）
     dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         // 判断是网络图片还是本地工程内图片
@@ -68,39 +74,34 @@
 }
 
 // pageCtrl点击事件，pageCtrl 影响 scrollView
-- (void)pageCtrlAction:(UIPageControl *)pageCtrl
-{
+- (void)pageCtrlAction:(UIPageControl *)pageCtrl {
     // 更改偏移量动画
     [self.scroll setContentOffset:CGPointMake((_pageCtrl.currentPage + 1) * self.scroll.frame.size.width, 0) animated:YES];
 }
 
 // 定时器实现循环播放
-- (void)timerAction:(NSTimer *)timer
-{
+- (void)timerAction:(NSTimer *)timer {
     _index++;
-    [self.scroll setContentOffset:CGPointMake(self.frame.size.width * (_index + 1), 0) animated:YES];
-    if (_index == self.array.count-2) {
+    [self.scroll setContentOffset:CGPointMake(self.scroll.frame.size.width * (_index + 1), 0) animated:YES];
+    if (_index == self.array.count - 2) {
         _index = 0;
         [self.scroll setContentOffset:CGPointMake(self.scroll.frame.size.width * _index, 0)];
     }
-    _pageCtrl.currentPage = _index;
 }
 
 // 对应定时器开关安全的处理
 // 开始拖拽
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
-{
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     // 失效
-    [_timer invalidate];
-    _timer = nil;
+    [self invalidateTimer];
 }
 
 // 结束减速代理，scrollView 影响 pageCtrl
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
-    // scrollView 滑动偏移量 contantOffset
+    // scrollView 滑动偏移量 contentOffset
     // pageCtrl 当前小圆点索引 currentPage
-    _index = self.scroll.contentOffset.x / self.scroll.frame.size.width - 1;
+    _index = (int)((self.scroll.contentOffset.x + 0.5) / self.scroll.frame.size.width) - 1;
     
     if (_index == self.array.count - 2) {
         _index = 0;
@@ -115,14 +116,39 @@
     [self setupTimer];
 }
 
+// 用户在连续滑动时更换page ctrl
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self getTotalPageAndCurrentPage];
+}
+
+// 获得当前页数
+- (void)getTotalPageAndCurrentPage {
+    //ScrollView中根据滚动距离来判断当前页数
+    int page = (int)((self.scroll.contentOffset.x + 0.5) / self.scroll.frame.size.width);
+    if (page == self.array.count || page == 0) {
+        return;
+    }
+    // 设置页码
+    self.pageCtrl.currentPage = page - 1;
+}
 
 // 创建定时器
 - (void)setupTimer
 {
-    [self.timer invalidate];
-    self.timer = nil;
+    [self invalidateTimer];
     // 定时器：实现自动播放
     self.timer = [NSTimer scheduledTimerWithTimeInterval:_timerInterval target:self selector:@selector(timerAction:) userInfo:nil repeats:YES];
+}
+
+// 定时器失效
+- (void)invalidateTimer {
+    [self.timer invalidate];
+    self.timer = nil;
+}
+
+// 销毁
+- (void)destroy {
+    [self invalidateTimer];
 }
 
 
